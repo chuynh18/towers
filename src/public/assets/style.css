@@ -1,0 +1,9 @@
+body {
+   margin: auto;
+   width: 60%;
+   max-width: 1024px;
+}
+
+h1 {
+   text-align: center;
+}
