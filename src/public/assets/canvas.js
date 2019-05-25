@@ -1,14 +1,14 @@
 "use strict";
 
-const DUMMY_GRID_SIZE = 5;
+const DUMMY_GRID_SIZE = newGame();
+const game = new Board(DUMMY_GRID_SIZE);
 const playerGuesses = create2dArray(DUMMY_GRID_SIZE);
 const activeCell = {x: null, y: null};
 
 const tower = document.getElementById("tower");
 const tDraw = tower.getContext("2d");
 const clickInfo = document.getElementById("click");
-resizeCanvas();
-drawGrid(DUMMY_GRID_SIZE);
+render();
 
 window.onresize = function () {
    render();
@@ -41,6 +41,7 @@ tower.onclick = function(e) {
    const clickedCell = calculateClickCoords(e);
    clearCanvas();
    drawGrid(DUMMY_GRID_SIZE);
+   renderClues();
 
    if (clickedCell.x > 0 && clickedCell.x <= DUMMY_GRID_SIZE && clickedCell.y > 0 && clickedCell.y <= DUMMY_GRID_SIZE) {
       activateClickedCell(clickedCell, DUMMY_GRID_SIZE, true);
@@ -100,8 +101,7 @@ function activateClickedCell(cellCoords, numCells, fromClick) {
 
       document.getElementById("click2").textContent = ` | active cell: none`;
 
-      clearCanvas();
-      drawGrid(DUMMY_GRID_SIZE);
+      render();
       return;
    }
 
@@ -149,7 +149,11 @@ function drawNumbers() {
    for (let i = 0; i < playerGuesses.length; i++) {
       for (let j = 0; j < playerGuesses[i].length; j++) {
          if (typeof playerGuesses[i][j] === "number") {
-            placeNum(playerGuesses[i][j], "black", i + 1, j + 1);
+            if (isDupe(i, j)) {
+               placeNum(playerGuesses[i][j], "red", i + 1, j + 1);
+            } else {
+               placeNum(playerGuesses[i][j], "black", i + 1, j + 1);
+            }
          }
       }
    }
@@ -174,6 +178,7 @@ function render() {
    resizeCanvas();
    clearCanvas();
    drawGrid(DUMMY_GRID_SIZE);
+   renderClues();
    activateClickedCell(activeCell, DUMMY_GRID_SIZE);
    drawNumbers();
 }
@@ -190,8 +195,33 @@ function isDupe(x, y) {
    }
 
    for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
-      
+      if (playerGuesses[i][y] === value && i !== x) {
+         return true;
+      }
+
+      if (playerGuesses[x][i] === value && i !== y) {
+         return true;
+      }
    }
 
    return false;
+}
+
+function renderClues() {
+   for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
+      placeNum(game.clues[i], "gray", i + 1, 0);
+      placeNum(game.clues[i + DUMMY_GRID_SIZE], "gray", DUMMY_GRID_SIZE + 1, i + 1);
+      placeNum(game.clues[i + (2 * DUMMY_GRID_SIZE)], "gray", DUMMY_GRID_SIZE - i, DUMMY_GRID_SIZE + 1);
+      placeNum(game.clues[i + (3 * DUMMY_GRID_SIZE)], "gray", 0, DUMMY_GRID_SIZE - i);
+   }
+}
+
+function newGame() {
+   let boardSize = Number(prompt("What size game board would you like?  (Enter between 4 and 10)"));
+
+   if (typeof boardSize === "number" && boardSize >= 4 && boardSize <= 10) {
+      return boardSize;
+   } else {
+      return newGame();
+   }
 }
