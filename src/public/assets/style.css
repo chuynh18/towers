@@ -1,9 +1,10 @@
 body {
-   margin: auto;
-   width: 60%;
+   margin: 0 auto;
+   width: 50%;
    max-width: 1024px;
 }
 
 h1, h2 {
+   margin: 0;
    text-align: center;
 }

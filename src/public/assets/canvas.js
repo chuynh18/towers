@@ -287,3 +287,7 @@ function victory() {
    drawGrid(DUMMY_GRID_SIZE);
    drawNumbers();
 }
+
+function validateTopClue(clueNum, clueValue) {
+   let visible = 0;
+}
