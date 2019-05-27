@@ -33,6 +33,18 @@ window.onkeyup = function(e) {
             render();
             document.getElementById("click2").textContent = ` | active cell: none`;
          }
+      } else if (DUMMY_GRID_SIZE === 10 && key === 0) {
+         if (activeCell.x > 0 && activeCell.x <= DUMMY_GRID_SIZE && activeCell.y > 0 && activeCell.y <= DUMMY_GRID_SIZE) {
+            updateBoard(10, activeCell.x, activeCell.y);
+            activeCell.x = null;
+            activeCell.y = null;
+            render();
+            document.getElementById("click2").textContent = ` | active cell: none`;
+         }
+      }
+
+      if (deepCompare(game.gameBoard, playerGuesses)) {
+         victory();
       }
    }
 }
@@ -43,10 +55,14 @@ tower.onclick = function(e) {
    drawGrid(DUMMY_GRID_SIZE);
    renderClues();
 
+   if (deepCompare(game.gameBoard, playerGuesses)) {
+      victory();
+   }
+
    if (clickedCell.x > 0 && clickedCell.x <= DUMMY_GRID_SIZE && clickedCell.y > 0 && clickedCell.y <= DUMMY_GRID_SIZE) {
-      activateClickedCell(clickedCell, DUMMY_GRID_SIZE, true);
+      activateCell(clickedCell, DUMMY_GRID_SIZE, true);
    } else {
-      activateClickedCell(activeCell, DUMMY_GRID_SIZE);
+      activateCell(activeCell, DUMMY_GRID_SIZE);
    }
 
    drawNumbers();
@@ -90,7 +106,7 @@ function calculateClickCoords(e) {
    return {x: cellX, y: cellY};
 }
 
-function activateClickedCell(cellCoords, numCells, fromClick) {
+function activateCell(cellCoords, numCells, fromClick) {
    if (cellCoords.x === null) {
       return;
    }
@@ -110,11 +126,15 @@ function activateClickedCell(cellCoords, numCells, fromClick) {
 
    document.getElementById("click2").textContent = ` | active cell: (${activeCell.x}, ${activeCell.y})`;
 
+   highlightCell(cellCoords, numCells, "#cccccc");
+}
+
+function highlightCell(cellCoords, numCells, color) {
    const cellPixels = tower.width / (numCells + 2);
    const x = cellCoords.x * cellPixels;
    const y = cellCoords.y * cellPixels;
 
-   tDraw.fillStyle = "#cccccc";
+   tDraw.fillStyle = color;
    tDraw.fillRect(x, y, cellPixels, cellPixels);
 }
 
@@ -148,11 +168,11 @@ function drawTextToCell(textObj, numCells) {
 function drawNumbers() {
    for (let i = 0; i < playerGuesses.length; i++) {
       for (let j = 0; j < playerGuesses[i].length; j++) {
-         if (typeof playerGuesses[i][j] === "number") {
-            if (isDupe(i, j)) {
-               placeNum(playerGuesses[i][j], "red", i + 1, j + 1);
+         if (typeof playerGuesses[j][i] === "number") {
+            if (isDupe(j, i)) {
+               placeNum(playerGuesses[j][i], "red", i + 1, j + 1);
             } else {
-               placeNum(playerGuesses[i][j], "black", i + 1, j + 1);
+               placeNum(playerGuesses[j][i], "black", i + 1, j + 1);
             }
          }
       }
@@ -179,12 +199,17 @@ function render() {
    clearCanvas();
    drawGrid(DUMMY_GRID_SIZE);
    renderClues();
-   activateClickedCell(activeCell, DUMMY_GRID_SIZE);
+
+   if (deepCompare(game.gameBoard, playerGuesses)) {
+      victory();
+   }
+
+   activateCell(activeCell, DUMMY_GRID_SIZE);
    drawNumbers();
 }
 
 function updateBoard(guess, x, y) {
-   playerGuesses[x - 1][y - 1] = guess;
+   playerGuesses[y - 1][x - 1] = guess;
 }
 
 function isDupe(x, y) {
@@ -224,4 +249,41 @@ function newGame() {
    } else {
       return newGame();
    }
+}
+
+function deepCompare(item1, item2) {
+   let same = true;
+
+   if (item1.length !== item2.length) {
+      return false;
+   }
+
+   if (Array.isArray(item1) && Array.isArray(item2)) {
+      for (let i = 0; i < item1.length; i++) {
+         if (!item2[i]) {
+            return false;
+         }
+
+         same = deepCompare(item1[i], item2[i]);
+
+         if (!same) {
+            return false;
+         }
+      }
+   } else {
+      item1 === item2 ? same = true : same = false;
+   }
+
+   return same;
+}
+
+function victory() {
+   for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
+      for (let j = 0; j < DUMMY_GRID_SIZE; j++) {
+         highlightCell({x: i + 1, y: j + 1}, DUMMY_GRID_SIZE, "#ccffcc");
+      }
+   }
+
+   drawGrid(DUMMY_GRID_SIZE);
+   drawNumbers();
 }
