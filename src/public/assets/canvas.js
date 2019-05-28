@@ -82,8 +82,11 @@ tower.onclick = function(e) {
 
 // get size of <body> so that game board can be scaled appropriately
 function resizeCanvas() {
-   tower.width = document.getElementsByTagName("body")[0].clientWidth;
-   tower.height = document.getElementsByTagName("body")[0].clientWidth;
+   const bodyWidth = document.getElementsByTagName("body")[0].clientWidth;
+   const windowHeight = 0.98 * window.innerHeight - 65;
+   const size = bodyWidth > windowHeight ? windowHeight : bodyWidth;
+   tower.width = size;
+   tower.height = size;
 }
 
 // draws the lines that form the game board
