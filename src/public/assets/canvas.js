@@ -45,10 +45,6 @@ window.onkeyup = function(e) {
          }
       }
 
-      // if (deepCompare(game.gameBoard, playerGuesses)) {
-      //    victory();
-      // }
-
       if (renderClues() && isBoardFull()) {
          victory();
       }
@@ -60,11 +56,6 @@ tower.onclick = function(e) {
    const clickedCell = calculateClickCoords(e);
    clearCanvas();
    drawGrid(DUMMY_GRID_SIZE);
-   // renderClues();
-
-   // if (deepCompare(game.gameBoard, playerGuesses)) {
-   //    victory();
-   // }
 
    if (renderClues() && isBoardFull()) {
       victory();
@@ -78,7 +69,6 @@ tower.onclick = function(e) {
 
    drawNumbers();
 }
-
 
 // get size of <body> so that game board can be scaled appropriately
 function resizeCanvas() {
@@ -232,11 +222,6 @@ function render() {
    resizeCanvas();
    clearCanvas();
    drawGrid(DUMMY_GRID_SIZE);
-   // renderClues();
-
-   // if (deepCompare(game.gameBoard, playerGuesses)) {
-   //    victory();
-   // }
 
    if (renderClues() && isBoardFull()) {
       victory();
@@ -341,33 +326,6 @@ function newGame() {
    } else {
       return newGame();
    }
-}
-
-// deep array comparison function used to figure out if player has won
-function deepCompare(item1, item2) {
-   let same = true;
-
-   if (item1.length !== item2.length) {
-      return false;
-   }
-
-   if (Array.isArray(item1) && Array.isArray(item2)) {
-      for (let i = 0; i < item1.length; i++) {
-         if (!item2[i]) {
-            return false;
-         }
-
-         same = deepCompare(item1[i], item2[i]);
-
-         if (!same) {
-            return false;
-         }
-      }
-   } else {
-      item1 === item2 ? same = true : same = false;
-   }
-
-   return same;
 }
 
 // draws green background on game board; is called upon victory
