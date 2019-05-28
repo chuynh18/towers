@@ -45,7 +45,11 @@ window.onkeyup = function(e) {
          }
       }
 
-      if (deepCompare(game.gameBoard, playerGuesses)) {
+      // if (deepCompare(game.gameBoard, playerGuesses)) {
+      //    victory();
+      // }
+
+      if (renderClues() && isBoardFull()) {
          victory();
       }
    }
@@ -56,9 +60,13 @@ tower.onclick = function(e) {
    const clickedCell = calculateClickCoords(e);
    clearCanvas();
    drawGrid(DUMMY_GRID_SIZE);
-   renderClues();
+   // renderClues();
 
-   if (deepCompare(game.gameBoard, playerGuesses)) {
+   // if (deepCompare(game.gameBoard, playerGuesses)) {
+   //    victory();
+   // }
+
+   if (renderClues() && isBoardFull()) {
       victory();
    }
 
@@ -221,9 +229,13 @@ function render() {
    resizeCanvas();
    clearCanvas();
    drawGrid(DUMMY_GRID_SIZE);
-   renderClues();
+   // renderClues();
 
-   if (deepCompare(game.gameBoard, playerGuesses)) {
+   // if (deepCompare(game.gameBoard, playerGuesses)) {
+   //    victory();
+   // }
+
+   if (renderClues() && isBoardFull()) {
       victory();
    }
 
@@ -259,12 +271,62 @@ function isDupe(x, y) {
 
 // draws the game clues along the edges of the game board
 function renderClues() {
+   let valid = true;
+
    for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
-      placeNum(game.clues[i], "gray", i + 1, 0);
-      placeNum(game.clues[i + DUMMY_GRID_SIZE], "gray", DUMMY_GRID_SIZE + 1, i + 1);
-      placeNum(game.clues[i + (2 * DUMMY_GRID_SIZE)], "gray", DUMMY_GRID_SIZE - i, DUMMY_GRID_SIZE + 1);
-      placeNum(game.clues[i + (3 * DUMMY_GRID_SIZE)], "gray", 0, DUMMY_GRID_SIZE - i);
+      // top row of clues, left to right
+      const topCol = [];
+
+      for (let j = 0; j < DUMMY_GRID_SIZE; j++) {
+         topCol.push(playerGuesses[j][i]);
+      }
+
+      if (validateFullClue(topCol, game.clues[i])) {
+         placeNum(game.clues[i], "gray", i + 1, 0);
+      } else {
+         placeNum(game.clues[i], "red", i + 1, 0);
+         valid = false;
+      }
+
+      // right column of clues, top to bottom
+      const leftRow = [];
+
+      for (let j = DUMMY_GRID_SIZE - 1; j >= 0; j--) {
+         leftRow.push(playerGuesses[i][j]);
+      }
+
+      if (validateFullClue(leftRow, game.clues[i + DUMMY_GRID_SIZE])) {
+         placeNum(game.clues[i + DUMMY_GRID_SIZE], "gray", DUMMY_GRID_SIZE + 1, i + 1);
+      } else {
+         placeNum(game.clues[i + DUMMY_GRID_SIZE], "red", DUMMY_GRID_SIZE + 1, i + 1);
+         valid = false;
+      }
+
+      // bottom row of clues, right to left
+      const bottomCol = [];
+
+      for (let j = DUMMY_GRID_SIZE - 1; j >= 0; j--) {
+         bottomCol.push(playerGuesses[j][DUMMY_GRID_SIZE - i - 1]);
+      }
+
+      if (validateFullClue(bottomCol, game.clues[i + (2 * DUMMY_GRID_SIZE)])) {
+         placeNum(game.clues[i + (2 * DUMMY_GRID_SIZE)], "gray", DUMMY_GRID_SIZE - i, DUMMY_GRID_SIZE + 1);
+      } else {
+         placeNum(game.clues[i + (2 * DUMMY_GRID_SIZE)], "red", DUMMY_GRID_SIZE - i, DUMMY_GRID_SIZE + 1);
+         valid = false;
+      }
+
+      // left column of clues, bottom to top
+      if (validateFullClue(playerGuesses[DUMMY_GRID_SIZE - i - 1], game.clues[i + (3 * DUMMY_GRID_SIZE)])) {
+         placeNum(game.clues[i + (3 * DUMMY_GRID_SIZE)], "gray", 0, DUMMY_GRID_SIZE - i);
+      } else {
+         placeNum(game.clues[i + (3 * DUMMY_GRID_SIZE)], "red", 0, DUMMY_GRID_SIZE - i);
+         valid = false;
+      }
+
    }
+
+   return valid;
 }
 
 // prompts user for desired game board size, returns input if it's a number between 4 and 10 inclusive
@@ -348,6 +410,19 @@ function validateFullClue(line, clueValue) {
    }
 
    return false;
+}
+
+// true if every cell has user input, false otherwise
+function isBoardFull() {
+   for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
+      for (let j = 0; j < DUMMY_GRID_SIZE; j++) {
+         if (typeof playerGuesses[i][j] !== "number") {
+            return false;
+         }
+      }
+   }
+
+   return true;
 }
 
 function validateTopClue(clueNum, clueValue) {
