@@ -10,10 +10,12 @@ const tDraw = tower.getContext("2d");
 const clickInfo = document.getElementById("click");
 render();
 
+// resize and rerender game board when window is resized
 window.onresize = function () {
    render();
 }
 
+// keypresses - enter and delete numbers from game board
 window.onkeyup = function(e) {
    if (activeCell.x !== null && activeCell.y !== null) {
       const key = Number(e.key);
@@ -49,6 +51,7 @@ window.onkeyup = function(e) {
    }
 }
 
+// onclick - activate/deactivate cells on game board
 tower.onclick = function(e) {
    const clickedCell = calculateClickCoords(e);
    clearCanvas();
@@ -68,11 +71,14 @@ tower.onclick = function(e) {
    drawNumbers();
 }
 
+
+// get size of <body> so that game board can be scaled appropriately
 function resizeCanvas() {
    tower.width = document.getElementsByTagName("body")[0].clientWidth;
    tower.height = document.getElementsByTagName("body")[0].clientWidth;
 }
 
+// draws the lines that form the game board
 function drawGrid(numCells) {
    const cellPixels = tower.width / (numCells + 2);
 
@@ -91,6 +97,7 @@ function drawGrid(numCells) {
    }
 }
 
+// gets coordinates of pixels clicked on game board, translates to cell coordinates
 function calculateClickCoords(e) {
    const rect = tower.getBoundingClientRect();
 
@@ -106,6 +113,7 @@ function calculateClickCoords(e) {
    return {x: cellX, y: cellY};
 }
 
+// updates activeCell variable with cell coordinates clicked (also deactivates)
 function activateCell(cellCoords, numCells, fromClick) {
    if (cellCoords.x === null) {
       return;
@@ -129,6 +137,7 @@ function activateCell(cellCoords, numCells, fromClick) {
    highlightCell(cellCoords, numCells, "#cccccc");
 }
 
+// draws cell highlight
 function highlightCell(cellCoords, numCells, color) {
    const cellPixels = tower.width / (numCells + 2);
    const x = cellCoords.x * cellPixels;
@@ -138,10 +147,12 @@ function highlightCell(cellCoords, numCells, color) {
    tDraw.fillRect(x, y, cellPixels, cellPixels);
 }
 
+// clears the entire canvas
 function clearCanvas() {
    tDraw.clearRect(0, 0, tower.width, tower.width);
 }
 
+// creates empty 2d array to hold player input
 function create2dArray(size) {
    const arr = new Array(size);
 
@@ -152,7 +163,29 @@ function create2dArray(size) {
    return arr;
 }
 
-// textObj {text, color, x, y}, size computed by function
+// renders player guesses onto the game board
+// also returns true if there were any dupes
+function drawNumbers() {
+   let dupe = false;
+
+   for (let i = 0; i < playerGuesses.length; i++) {
+      for (let j = 0; j < playerGuesses[i].length; j++) {
+         if (typeof playerGuesses[j][i] === "number") {
+            if (isDupe(j, i)) {
+               placeNum(playerGuesses[j][i], "red", i + 1, j + 1);
+               dupe = true;
+            } else {
+               placeNum(playerGuesses[j][i], "black", i + 1, j + 1);
+            }
+         }
+      }
+   }
+
+   return dupe;
+}
+
+// draws text into a cell on the canvas; textObj object holds text and cell coordinates
+// format of textObj param is {text, color, x, y}; font size is computed
 function drawTextToCell(textObj, numCells) {
    const fontSize = tower.width / (2 * (numCells + 2));
    tDraw.font = `${fontSize}px Arial`;
@@ -165,20 +198,8 @@ function drawTextToCell(textObj, numCells) {
    tDraw.fillText(textObj.text, x, y);
 }
 
-function drawNumbers() {
-   for (let i = 0; i < playerGuesses.length; i++) {
-      for (let j = 0; j < playerGuesses[i].length; j++) {
-         if (typeof playerGuesses[j][i] === "number") {
-            if (isDupe(j, i)) {
-               placeNum(playerGuesses[j][i], "red", i + 1, j + 1);
-            } else {
-               placeNum(playerGuesses[j][i], "black", i + 1, j + 1);
-            }
-         }
-      }
-   }
-}
-
+// function that is actually called to render text into a cell
+// handles grid offset so that only the playable game board is rendered upon
 function placeNum(num, color, x, y) {
    if (x > DUMMY_GRID_SIZE + 1 || y > DUMMY_GRID_SIZE + 1) {
       console.log("Attempted to draw number outside of the grid!");
@@ -194,6 +215,8 @@ function placeNum(num, color, x, y) {
    }, DUMMY_GRID_SIZE);
 }
 
+// function that calls all functions necessary to render the game board appropriately
+// will "do the right thing" regardless of game state
 function render() {
    resizeCanvas();
    clearCanvas();
@@ -208,10 +231,12 @@ function render() {
    drawNumbers();
 }
 
+// helper function that mutates the playerGuesses array with the player's input
 function updateBoard(guess, x, y) {
    playerGuesses[y - 1][x - 1] = guess;
 }
 
+// returns true if a duplicate number is detected in the same column or row
 function isDupe(x, y) {
    const value = playerGuesses[x][y];
 
@@ -232,6 +257,7 @@ function isDupe(x, y) {
    return false;
 }
 
+// draws the game clues along the edges of the game board
 function renderClues() {
    for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
       placeNum(game.clues[i], "gray", i + 1, 0);
@@ -241,6 +267,7 @@ function renderClues() {
    }
 }
 
+// prompts user for desired game board size, returns input if it's a number between 4 and 10 inclusive
 function newGame() {
    let boardSize = Number(prompt("What size game board would you like?  (Enter between 4 and 10)"));
 
@@ -251,6 +278,7 @@ function newGame() {
    }
 }
 
+// deep array comparison function used to figure out if player has won
 function deepCompare(item1, item2) {
    let same = true;
 
@@ -277,6 +305,7 @@ function deepCompare(item1, item2) {
    return same;
 }
 
+// draws green background on game board; is called upon victory
 function victory() {
    for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
       for (let j = 0; j < DUMMY_GRID_SIZE; j++) {
@@ -288,6 +317,53 @@ function victory() {
    drawNumbers();
 }
 
+// returns number of visible towers in a line (line means row or column)
+// line is an array of numbers and must be built before being fed in
+function countVisible(line) {
+   let answer = 1;
+   let largest = line[0];
+   
+   for (let i = 0; i < line.length; i++) {
+      if (line[i] > largest) {
+         answer++;
+         largest = line[i];
+      }
+   }
+
+   return answer;
+}
+
+// returns true if line is full and valid
+// IMPORTANT:  also returns true if line is incomplete
+// returns false if line is full and invalid
+function validateFullClue(line, clueValue) {
+   for (let i = 0; i < line.length; i++) {
+      if (typeof line[i] !== "number") {
+         return true;
+      }
+   }
+
+   if (countVisible(line) === clueValue) {
+      return true;
+   }
+
+   return false;
+}
+
 function validateTopClue(clueNum, clueValue) {
-   let visible = 0;
+   if (clueNum > DUMMY_GRID_SIZE) {
+      console.log("check yourself before you wreck yourself");
+   }
+
+   const column = [];
+   
+   for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
+      column.push(playerGuesses[i][clueNum]);
+   }
+
+   for (let i = 0; i < DUMMY_GRID_SIZE; i++) {
+      
+   }
+
+   return true;
 }
